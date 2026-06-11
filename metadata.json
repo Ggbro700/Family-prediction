@@ -1,0 +1,6 @@
+{
+  "name": "Family World Cup Predictor",
+  "description": "An interactive web app for families to predict World Cup matches, track scores, update real-world results, and see who climbs to the top of the leaderboard!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
