@@ -22,172 +22,43 @@ if (!fs.existsSync(path.dirname(DB_PATH))) {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 }
 
-// Generate default matches (Group Stage World Cup schedule aligned to 2026)
+// Generate default matches (matches featuring admin puta)
 function seedMatches(): Match[] {
-  const groups: { [key: string]: string[] } = {
-    "Group A": ["Mexico", "Colombia", "Sweden", "Uzbekistan"],
-    "Group B": ["Canada", "Denmark", "Nigeria", "South Korea"],
-    "Group C": ["USA", "Morocco", "Poland", "Australia"],
-    "Group D": ["Argentina", "Ecuador", "Egypt", "Czechia"],
-    "Group E": ["France", "Venezuela", "Mali", "Scotland"],
-    "Group F": ["Germany", "Uruguay", "Algeria", "Japan"],
-    "Group G": ["England", "Croatia", "Ghana", "Iraq"],
-    "Group H": ["Brazil", "Switzerland", "Cameroon", "New Zealand"],
-    "Group I": ["Portugal", "Peru", "Tunisia", "Saudi Arabia"],
-    "Group J": ["Spain", "Belgium", "Ivory Coast", "Qatar"],
-    "Group K": ["Italy", "Ukraine", "South Africa", "Panama"],
-    "Group L": ["Netherlands", "Chile", "Senegal", "Jamaica"],
-  };
-
-  const matches: Match[] = [];
-  let matchIdCounter = 1;
-
-  // Let's seed 72 group stage matches (3 rounds for each of the 12 groups)
-  const groupNames = Object.keys(groups);
-  
-  groupNames.forEach((groupName, gIdx) => {
-    const teams = groups[groupName];
-    // Programmatic round-robin pairings for 4 teams in each group
-    const rounds = [
-      [[0, 1], [2, 3]],
-      [[0, 2], [1, 3]],
-      [[0, 3], [1, 2]],
-    ];
-
-    rounds.forEach((round, rIdx) => {
-      // Offset dates dynamically to distribute over June 11 to June 27
-      let roundDay = 0;
-      if (rIdx === 0) {
-        roundDay = Math.floor(gIdx / 2); // Days 0 to 5 (June 11 - 16)
-      } else if (rIdx === 1) {
-        roundDay = 6 + Math.floor(gIdx / 2); // Days 6 to 11 (June 17 - 22)
-      } else {
-        if (gIdx >= 8) {
-          roundDay = 16; // Day 16 (June 27)
-        } else {
-          roundDay = 12 + Math.floor(gIdx / 2); // Days 12 to 15 (June 23 - 26)
-        }
-      }
-      
-      round.forEach((pair, pIdx) => {
-        const home = teams[pair[0]];
-        const away = teams[pair[1]];
-        const matchHour = pIdx === 0 ? "15:00" : "19:00";
-        
-        // Aligned strictly to World Cup 2026 opening date: June 11, 2026
-        const baseDate = new Date("2026-06-11T12:00:00Z");
-        baseDate.setDate(baseDate.getDate() + roundDay);
-        const dateStr = `${baseDate.toISOString().split('T')[0]} ${matchHour}`;
-
-        matches.push({
-          id: `m-${matchIdCounter++}`,
-          homeTeam: home,
-          awayTeam: away,
-          group: groupName,
-          stage: "Group Stage",
-          date: dateStr,
-          status: "scheduled",
-        });
-      });
-    });
-  });
-
-  // Knockout placeholders matching expanded 48-team knockouts (Round of 32 onwards)
-  const knockouts: { stage: Match["stage"]; home: string; away: string }[] = [
-    // Round of 32
-    { stage: "Round of 32", home: "Winner Group A", away: "3rd Place C/D/E" },
-    { stage: "Round of 32", home: "Runner-up Group A", away: "Runner-up Group B" },
-    { stage: "Round of 32", home: "Winner Group C", away: "3rd Place B/F/G" },
-    { stage: "Round of 32", home: "Winner Group D", away: "3rd Place I/J/K" },
-    { stage: "Round of 32", home: "Winner Group E", away: "Runner-up Group D" },
-    { stage: "Round of 32", home: "Winner Group F", away: "Runner-up Group C" },
-    { stage: "Round of 32", home: "Winner Group G", away: "3rd Place A/E/L" },
-    { stage: "Round of 32", home: "Winner Group H", away: "Runner-up Group I" },
-    { stage: "Round of 32", home: "Winner Group I", away: "3rd Place D/E/J" },
-    { stage: "Round of 32", home: "Winner Group J", away: "Runner-up Group H" },
-    { stage: "Round of 32", home: "Winner Group K", away: "Runner-up Group G" },
-    { stage: "Round of 32", home: "Winner Group L", away: "Runner-up Group F" },
-    { stage: "Round of 32", home: "Runner-up Group E", away: "Runner-up Group J" },
-    { stage: "Round of 32", home: "Runner-up Group F", away: "Runner-up Group K" },
-    { stage: "Round of 32", home: "Runner-up Group G", away: "Runner-up Group L" },
-    { stage: "Round of 32", home: "Runner-up Group H", away: "Runner-up Group A" },
-
-    // Round of 16
-    { stage: "Round of 16", home: "Winner R32 #1", away: "Winner R32 #2" },
-    { stage: "Round of 16", home: "Winner R32 #3", away: "Winner R32 #4" },
-    { stage: "Round of 16", home: "Winner R32 #5", away: "Winner R32 #6" },
-    { stage: "Round of 16", home: "Winner R32 #7", away: "Winner R32 #8" },
-    { stage: "Round of 16", home: "Winner R32 #9", away: "Winner R32 #10" },
-    { stage: "Round of 16", home: "Winner R32 #11", away: "Winner R32 #12" },
-    { stage: "Round of 16", home: "Winner R32 #13", away: "Winner R32 #14" },
-    { stage: "Round of 16", home: "Winner R32 #15", away: "Winner R32 #16" },
-
-    // Quarterfinal
-    { stage: "Quarterfinal", home: "Winner R16 #1", away: "Winner R16 #2" },
-    { stage: "Quarterfinal", home: "Winner R16 #3", away: "Winner R16 #4" },
-    { stage: "Quarterfinal", home: "Winner R16 #5", away: "Winner R16 #6" },
-    { stage: "Quarterfinal", home: "Winner R16 #7", away: "Winner R16 #8" },
-
-    // Semifinal
-    { stage: "Semifinal", home: "Winner QF #1", away: "Winner QF #2" },
-    { stage: "Semifinal", home: "Winner QF #3", away: "Winner QF #4" },
-
-    // Third Place
-    { stage: "Third Place", home: "Loser SF #1", away: "Loser SF #2" },
-
-    // Final
-    { stage: "Final", home: "Winner SF #1", away: "Winner SF #2" },
-  ];
-
-  knockouts.forEach((k, idx) => {
-    let dateStr = "";
-    if (k.stage === "Round of 32") {
-      // 16 matches. June 28 - July 3
-      const dayOffset = Math.floor(idx / 3); // Spans 6 days -> June 28 to July 3
-      const baseKoDate = new Date("2026-06-28T12:00:00Z");
-      baseKoDate.setDate(baseKoDate.getDate() + dayOffset);
-      const hour = idx % 3 === 0 ? "13:00" : idx % 3 === 1 ? "17:00" : "21:00";
-      dateStr = `${baseKoDate.toISOString().split('T')[0]} ${hour}`;
-    } else if (k.stage === "Round of 16") {
-      // 8 matches. July 4 – July 7 (4 days, 2 matches per day)
-      const r16Idx = idx - 16;
-      const dayOffset = Math.floor(r16Idx / 2);
-      const baseKoDate = new Date("2026-07-04T12:00:00Z");
-      baseKoDate.setDate(baseKoDate.getDate() + dayOffset);
-      const hour = r16Idx % 2 === 0 ? "16:00" : "20:00";
-      dateStr = `${baseKoDate.toISOString().split('T')[0]} ${hour}`;
-    } else if (k.stage === "Quarterfinal") {
-      // 4 matches. July 9 – July 11 (3 days)
-      const qfIdx = idx - 24;
-      const dayOffset = Math.floor(qfIdx / 1.5); // Spans days 0 to 2 -> July 9 to July 11
-      const baseKoDate = new Date("2026-07-09T12:00:00Z");
-      baseKoDate.setDate(baseKoDate.getDate() + dayOffset);
-      const hour = qfIdx % 2 === 0 ? "15:00" : "19:00";
-      dateStr = `${baseKoDate.toISOString().split('T')[0]} ${hour}`;
-    } else if (k.stage === "Semifinal") {
-      // 2 matches. July 14 and July 15 (1 match per day)
-      const sfIdx = idx - 28;
-      const baseKoDate = new Date("2026-07-14T12:00:00Z");
-      baseKoDate.setDate(baseKoDate.getDate() + sfIdx);
-      dateStr = `${baseKoDate.toISOString().split('T')[0]} 19:00`;
-    } else if (k.stage === "Third Place") {
-      dateStr = "2026-07-18 15:00";
-    } else if (k.stage === "Final") {
-      dateStr = "2026-07-19 19:00";
+  return [
+    {
+      id: "m-1",
+      homeTeam: "admin puta",
+      awayTeam: "Real Madrid",
+      homeFlag: "👑",
+      awayFlag: "🇪🇸",
+      group: "Group A",
+      stage: "Group Stage",
+      date: "2026-06-12 18:00",
+      status: "scheduled"
+    },
+    {
+      id: "m-2",
+      homeTeam: "FC Barcelona",
+      awayTeam: "admin puta",
+      homeFlag: "🇪🇸",
+      awayFlag: "👑",
+      group: "Group A",
+      stage: "Group Stage",
+      date: "2026-06-15 20:00",
+      status: "scheduled"
+    },
+    {
+      id: "m-3",
+      homeTeam: "admin puta",
+      awayTeam: "Manchester City",
+      homeFlag: "👑",
+      awayFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+      group: "Group A",
+      stage: "Group Stage",
+      date: "2026-06-18 21:00",
+      status: "scheduled"
     }
-
-    matches.push({
-      id: `m-ko-${idx + 1}`,
-      homeTeam: k.home,
-      awayTeam: k.away,
-      group: "Knockout",
-      stage: k.stage,
-      date: dateStr,
-      status: "scheduled",
-    });
-  });
-
-  return matches;
+  ];
 }
 
 // Read database
@@ -228,11 +99,11 @@ function readDB(): AppState {
     try {
       const raw = fs.readFileSync(DB_PATH, "utf8");
       db = JSON.parse(raw);
-      // Migration: automatically update to World Cup 2026 if empty or not containing 104 matches (skip if manualMode is true)
+      // Migration: automatically update to only matches featuring admin puta if contains other matches
       const isManual = db.settings?.manualMode === true;
-      const isOld = !isManual && (!db.matches || db.matches.length !== 104 || db.matches.some((m: any) => m.homeTeam === "Qatar" || m.awayTeam === "Qatar"));
+      const isOld = !isManual && (!db.matches || db.matches.length !== 3 || db.matches.some((m: any) => m.homeTeam !== "admin puta" && m.awayTeam !== "admin puta"));
       if (isOld) {
-        console.log("Migrating database config to FIFA World Cup 2026 matches format (104 matches, 12 groups, Round of 32 offsets)...");
+        console.log("Migrating database config to matches featuring admin puta...");
         db.matches = seedMatches();
         db.predictions = []; // Clear outdated predictions
       }
@@ -723,7 +594,7 @@ app.post("/api/predictions", (req, res) => {
 
 // Admin ONLY: update match scores or set match details (home, away, stage, date)
 app.post("/api/admin/match", (req, res) => {
-  const { adminPin, matchId, homeTeam, awayTeam, stage, date, status, homeScore, awayScore, winnerId, homeFlag, awayFlag, lockDate } = req.body;
+  const { adminPin, matchId, homeTeam, awayTeam, stage, date, status, homeScore, awayScore, winnerId, homeFlag, awayFlag, lockDate, hidden } = req.body;
 
   const db = readDB();
   if (adminPin !== db.settings.adminPin) {
@@ -746,6 +617,13 @@ app.post("/api/admin/match", (req, res) => {
   if (homeFlag !== undefined) currentMatch.homeFlag = homeFlag;
   if (awayFlag !== undefined) currentMatch.awayFlag = awayFlag;
   if (lockDate !== undefined) currentMatch.lockDate = lockDate;
+  if (hidden !== undefined) {
+    if (hidden === null) {
+      delete currentMatch.hidden;
+    } else {
+      currentMatch.hidden = !!hidden;
+    }
+  }
   
   if (homeScore !== undefined && homeScore !== null) {
     currentMatch.homeScore = Number(homeScore);

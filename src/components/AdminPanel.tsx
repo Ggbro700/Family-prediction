@@ -41,6 +41,7 @@ export default function AdminPanel({ state, onStateUpdate, adminPin }: AdminPane
   const [customStage, setCustomStage] = useState<Match["stage"]>("Group Stage");
   const [customDate, setCustomDate] = useState<string>("2026-06-11 18:00");
   const [customLockDate, setCustomLockDate] = useState<string>("");
+  const [customHidden, setCustomHidden] = useState<boolean>(false);
 
   // Automated Match sync states
   const [syncDate, setSyncDate] = useState<string>("2026-06-11");
@@ -248,6 +249,7 @@ export default function AdminPanel({ state, onStateUpdate, adminPin }: AdminPane
       homeFlag: customHomeFlag,
       awayFlag: customAwayFlag,
       lockDate: customLockDate,
+      hidden: customHidden,
     };
 
     try {
@@ -267,6 +269,7 @@ export default function AdminPanel({ state, onStateUpdate, adminPin }: AdminPane
       setCustomHomeFlag("");
       setCustomAwayFlag("");
       setCustomLockDate("");
+      setCustomHidden(false);
     } catch (err: any) {
       triggerToast(err.message || "Failed to edit bracket info", "error");
     }
@@ -283,6 +286,7 @@ export default function AdminPanel({ state, onStateUpdate, adminPin }: AdminPane
       setCustomStage(m.stage);
       setCustomDate(m.date);
       setCustomLockDate(m.lockDate || "");
+      setCustomHidden(m.hidden ?? false);
     }
   };
 
@@ -848,6 +852,19 @@ export default function AdminPanel({ state, onStateUpdate, adminPin }: AdminPane
                           className="w-full text-xs rounded-xl border border-slate-800 p-2 bg-slate-950 text-slate-100 focus:border-indigo-500 focus:outline-hidden transition-all font-mono"
                         />
                       </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 py-1">
+                      <input
+                        type="checkbox"
+                        id="customHiddenCheckbox"
+                        checked={customHidden}
+                        onChange={(e) => setCustomHidden(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-500 focus:ring-indigo-500 cursor-pointer"
+                      />
+                      <label htmlFor="customHiddenCheckbox" className="text-xs font-semibold text-slate-350 select-none cursor-pointer">
+                        🔒 Hide match from members (Only visible to admin)
+                      </label>
                     </div>
 
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-850/60">

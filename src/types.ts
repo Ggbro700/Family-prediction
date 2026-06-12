@@ -23,6 +23,7 @@ export interface Match {
   homeScore?: number;
   awayScore?: number;
   winnerId?: string; // For knockouts when penalties happen / to declare who advanced
+  hidden?: boolean; // Option to hide match from members
 }
 
 export interface Prediction {

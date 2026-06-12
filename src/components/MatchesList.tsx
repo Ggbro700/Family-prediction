@@ -141,6 +141,11 @@ export default function MatchesList({ state, currentUser, onStateUpdate, predict
 
   // Filtration logic
   const filteredMatches = state.matches.filter((m) => {
+    const isAdmin = currentUser?.role === "admin";
+    if (m.hidden && !isAdmin) {
+      return false;
+    }
+
     const matchDateOnly = m.date.split(" ")[0];
     if (dateViewOption === "today" && matchDateOnly !== todayStr) {
       return false;
@@ -361,6 +366,12 @@ export default function MatchesList({ state, currentUser, onStateUpdate, predict
                     <span className="text-[10px] text-amber-500 font-mono font-bold flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded-sm">
                       <Lock className="w-3 h-3" />
                       Locks: {m.lockDate}
+                    </span>
+                  )}
+
+                  {m.hidden && (
+                    <span className="text-[10px] text-indigo-400 font-bold bg-indigo-950/40 border border-indigo-900/30 px-1.5 py-0.5 rounded-sm flex items-center gap-1">
+                      🔒 Hidden Match
                     </span>
                   )}
                 </div>
